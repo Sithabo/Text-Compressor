@@ -20,6 +20,7 @@ public:
     void decode();                        // optional: expand compressed form
     void displaySequence();               // print current sequence
     void displayRules();                  // print learned rules
+    void readAndDecode();                 // New method to handle decompression input
 };
 
 Text2Compress::Text2Compress()
@@ -154,9 +155,10 @@ void Text2Compress::displaySequence()
 {
     for (int i = 0; i < _length; ++i)
     {
-        std::cout << _seq[i] << " ";
+        if (i > 0) cout << " ";
+        cout << _seq[i];
     }
-    std::cout << std::endl;
+    cout << endl;
 }
 
 void Text2Compress::decode()
@@ -199,35 +201,58 @@ void Text2Compress::decode()
     cout << endl;
 }
 
+void Text2Compress::readAndDecode()
+{
+    int m; // number of rules for decompression
+    if (cin >> m)
+    {
+        _ruleCount = 0; // Reset for new rules
+        for (int i = 0; i < m; i++)
+        {
+            cin >> _rules[_ruleCount][0]
+                >> _rules[_ruleCount][1]
+                >> _rules[_ruleCount][2];
+            _ruleCount++;
+        }
+
+        _length = 0; // Reset for new sequence
+        int value;
+        while (cin >> value)
+        {
+            _seq[_length++] = value;
+        }
+
+        cout << "Decompressed Text:" << endl;
+        decode();
+    }
+}
+
 int main()
 {
     int k, numLines;
     // First row: k and number of lines of input
     cin >> k >> numLines;
-    cout << "Successfully read k: " << k << " and numLines: " << numLines << endl; // Add this line
+    cin.ignore(); // skip newline
 
-    while (cin.peek() == '\r' || cin.peek() == '\n')
-    {
-        cin.get(); // eat carriage returns and newlines
-    }
     // Step 2: Create a Text2Compress object
     Text2Compress compressor;
+
     // Step 1: Read lines of input text
-    // Store each character’s ASCII code (0–127) into the sequence array
     compressor.initialize(k, numLines);
+
     // Step 3: Train with k merges
     compressor.train(k);
+
     // Step 4: Display the learned rules
     cout << "Rules learned from Compression:" << endl;
     compressor.displayRules();
+
     // Step 5: Display the compressed sequence
     cout << "Compressed sequence:" << endl;
     compressor.displaySequence();
-    // Step 6: Process decompression lines (triplets + sequence)
-    cout << "Decompressed Text:" << endl;
-    compressor.decode();
-    // Step7: print the compressed text
 
-    // You will write code to handle that part
+    // Step 6: Process decompression lines (triplets + sequence)
+    compressor.readAndDecode();
+
     return 0;
 }
